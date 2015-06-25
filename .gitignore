@@ -1,0 +1,12 @@
+target
+.project
+.classpath
+.settings
+.idea
+.DS_Store
+*.iml
+*.ipr
+*.iws
+.metadata
+.codepro
+.pmd
