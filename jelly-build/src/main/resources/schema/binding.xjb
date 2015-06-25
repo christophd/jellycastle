@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:annox="http://annox.dev.java.net"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd"
+        jaxb:extensionBindingPrefixes="xjc annox"
+        version="2.1">
+
+  <jaxb:bindings schemaLocation="maven-4.0.0.xsd" node="/xs:schema">
+    <jaxb:globalBindings>
+      <xjc:simple/>
+    </jaxb:globalBindings>
+
+    <jaxb:schemaBindings>
+      <jaxb:package name="org.jellycastle.maven"/>
+    </jaxb:schemaBindings>
+
+    <jaxb:bindings node="xs:complexType[@name='Model']">
+      <annox:annotateClass>@javax.xml.bind.annotation.XmlType(name="Model", propOrder={"modelVersion",
+        "parent",
+        "groupId",
+        "artifactId",
+        "version",
+        "packaging",
+        "name",
+        "description",
+        "url",
+        "organization",
+        "inceptionYear",
+        "issueManagement",
+        "ciManagement",
+        "scm",
+        "mailingLists",
+        "developers",
+        "contributors",
+        "licenses",
+        "prerequisites",
+        "modules",
+        "properties",
+        "dependencyManagement",
+        "dependencies",
+        "build",
+        "distributionManagement",
+        "profiles",
+        "reports",
+        "reporting",
+        "repositories",
+        "pluginRepositories"})</annox:annotateClass>
+    </jaxb:bindings>
+  </jaxb:bindings>
+
+</jaxb:bindings>
