@@ -4,7 +4,7 @@ Jelly Castle ![Logo][1]
 Welcome to Jelly Builds
 ---------
 
-Jelly castle enables Maven build configuration via Java annotations.
+JellyCastle builds enable Maven build configuration via Java annotations.
 
 Why should someone do something like this? Maven has been and is still a well known standard
 for Java build lifecylces. The painful experience with this approach is developers having to deal
