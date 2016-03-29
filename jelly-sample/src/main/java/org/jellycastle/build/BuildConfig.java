@@ -22,6 +22,12 @@ public class BuildConfig {
     public void springBeans() {
     }
 
+    @Dependency(groupId = "org.springframework",
+            artifactId = "spring-context",
+            version = "${spring.version}")
+    public void springContext() {
+    }
+
     @Plugin(groupId = "org.apache.maven.plugins",
             artifactId = "maven-jar-plugin",
             version = "2.5")

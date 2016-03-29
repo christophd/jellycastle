@@ -11,10 +11,12 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.jellycastle.build.JellyBuild;
+import org.jellycastle.maven.Project;
 
 import java.io.*;
 import java.net.*;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Christoph Deppisch
@@ -59,11 +61,19 @@ public class JellyModelReader extends DefaultModelReader {
 
         Source modelSource = (Source) options.get(ModelProcessor.SOURCE);
 
-        if (("" + modelSource).contains("build.properties")) {
-            try {
-                JellyBuild build = getJellyBuild();
-                String pom = build.mvn().print(build.load());
+        if (("" + modelSource).contains("pom.properties")) {
+            Properties properties = new Properties();
+            properties.load(reader);
 
+            logger.info(JellyExtensionProperties.SEPARATOR);
+            logger.info("J E L L Y   B U I L D   A N N O T A T I O N S");
+
+            try {
+                JellyBuild build = getJellyBuild(properties);
+                Project mavenProject = build.load();
+                build.mvn().save(mavenProject);
+
+                String pom = build.mvn().print(mavenProject);
                 logger.debug(pom);
 
                 return super.read(ReaderFactory.newXmlReader(new ByteArrayInputStream(pom.getBytes())), options);
@@ -75,12 +85,15 @@ public class JellyModelReader extends DefaultModelReader {
         return super.read(reader, options);
     }
 
-    private JellyBuild getJellyBuild() throws MalformedURLException {
+    private JellyBuild getJellyBuild(Properties properties) throws MalformedURLException {
+        String configClassName = properties.getProperty(JellyExtensionProperties.CONFIG_CLASS_PROPERTY, JellyExtensionProperties.CONFIG_CLASS_DEFAULT);
+        String outputDirectory = properties.getProperty(JellyExtensionProperties.OUTPUT_DIR_PROPERTY, JellyExtensionProperties.OUTPUT_DIR_DEFAULT);
+
         try {
-            return new JellyBuild(new URLClassLoader(new URL[]{new File("target/classes").toURI().toURL()},
-                    getClass().getClassLoader()).loadClass("org.jellycastle.build.BuildConfig"));
+            return new JellyBuild(new URLClassLoader(new URL[]{new File(outputDirectory).toURI().toURL()},
+                    getClass().getClassLoader()).loadClass(configClassName));
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(String.format("Unable to read build configuration class '%s'", "org.jellycastle.build.BuildConfig"), e);
+            throw new RuntimeException(String.format("Unable to read build configuration class '%s'", configClassName), e);
         }
     }
 }

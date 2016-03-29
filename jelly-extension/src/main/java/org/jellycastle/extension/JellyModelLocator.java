@@ -13,6 +13,6 @@ import java.io.File;
 public class JellyModelLocator implements ModelLocator {
     @Override
     public File locatePom(File projectDirectory) {
-        return new File(projectDirectory, "build.properties");
+        return new File(projectDirectory, "pom.properties");
     }
 }
