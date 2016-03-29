@@ -16,11 +16,11 @@ import java.net.*;
  * Goal which touches a timestamp file.
  */
 @Component(role = org.apache.maven.plugin.Mojo.class)
-@Execute(phase = LifecyclePhase.COMPILE,
+@Execute(phase = LifecyclePhase.INITIALIZE,
         goal = "build")
 @Mojo( name = "build",
         requiresProject = true,
-        defaultPhase = LifecyclePhase.COMPILE,
+        defaultPhase = LifecyclePhase.INITIALIZE,
         requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class PrepareBuildMojo extends AbstractMojo {
 
@@ -37,7 +37,7 @@ public class PrepareBuildMojo extends AbstractMojo {
         try {
             JellyBuild build = new JellyBuild(getProjectClassLoader().loadClass(configClass))
                     .workingDirectory(project.getBasedir().getAbsolutePath());
-            logger.info(build.mvn().print());
+            logger.info(build.mvn().print(build.load()));
         } catch (ClassNotFoundException e) {
             logger.error(String.format("Unable to read build configuration class '%s'", configClass));
         }

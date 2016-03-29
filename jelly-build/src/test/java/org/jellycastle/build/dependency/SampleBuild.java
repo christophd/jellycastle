@@ -17,6 +17,7 @@
 package org.jellycastle.build.dependency;
 
 import org.jellycastle.annotation.Build;
+import org.jellycastle.annotation.Property;
 import org.jellycastle.annotation.dependency.Dependency;
 import org.jellycastle.annotation.jar.JavaBuild;
 import org.jellycastle.annotation.plugin.Plugin;
@@ -28,10 +29,12 @@ import org.jellycastle.annotation.plugin.Plugin;
 @JavaBuild
 @Build(groupId = "org.sample",
         artifactId = "build-sample")
+@Property(name = "spring.version", value = "4.0.7.RELEASE")
 public class SampleBuild {
 
     @Dependency(groupId = "org.springframework",
-                artifactId = "spring-beans")
+                artifactId = "spring-beans",
+                version = "${spring.version}")
     public void springBeans() {
     }
 

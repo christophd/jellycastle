@@ -1,4 +1,4 @@
-package org.jellycastle.plugin;
+package org.jellycastle.extension;
 
 import org.apache.maven.execution.ProjectExecutionEvent;
 import org.apache.maven.execution.ProjectExecutionListener;
@@ -17,7 +17,7 @@ import java.net.*;
  * @since 1.0
  */
 @Component( role = ProjectExecutionListener.class )
-public class ProjectExecutor implements ProjectExecutionListener {
+public class JellyProjectExecutor implements ProjectExecutionListener {
 
     @Requirement
     private Logger logger;
@@ -28,7 +28,7 @@ public class ProjectExecutor implements ProjectExecutionListener {
             MavenProject project = projectExecutionEvent.getProject();
             JellyBuild build = new JellyBuild(getProjectClassLoader(project).loadClass("org.jellycastle.build.BuildConfig"))
                     .workingDirectory(project.getBasedir().getAbsolutePath());
-            logger.info(build.mvn().print());
+            logger.info(build.mvn().print(build.load()));
         } catch (ClassNotFoundException e) {
             logger.error(String.format("Unable to read build configuration class '%s'", "org.jellycastle.build.BuildConfig"));
         }

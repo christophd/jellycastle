@@ -23,9 +23,9 @@
 
   <modules>
     <module>jelly-build</module>
-    <module>jelly-lifecycle</module>
     <module>jelly-maven-plugin</module>
     <module>jelly-extension</module>
+    <module>jelly-sample</module>
   </modules>
 
   <dependencyManagement>
@@ -173,6 +173,16 @@
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-component-metadata</artifactId>
           <version>1.5.5</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.3</version>
+          <configuration>
+            <encoding>${project.build.sourceEncoding}</encoding>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

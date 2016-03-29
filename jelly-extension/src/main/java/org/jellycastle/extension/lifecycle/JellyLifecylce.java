@@ -1,4 +1,4 @@
-package org.jellycastle.plugin;
+package org.jellycastle.extension.lifecycle;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
@@ -20,7 +20,7 @@ public class JellyLifecylce extends AbstractMavenLifecycleParticipant {
     private String separator = "------------------------------------------------------------------------";
 
     @Override
-    public void afterProjectsRead( MavenSession session ) throws MavenExecutionException {
+    public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
         logger.info(separator);
         logger.info("J E L L Y  B U I L D  E X T E N S I O N");
     }

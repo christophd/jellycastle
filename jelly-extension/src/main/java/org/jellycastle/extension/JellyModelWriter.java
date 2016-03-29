@@ -1,6 +1,7 @@
 package org.jellycastle.extension;
 
 import org.apache.maven.model.Model;
+import org.apache.maven.model.io.DefaultModelWriter;
 import org.apache.maven.model.io.ModelWriter;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.component.annotations.Component;
@@ -12,10 +13,10 @@ import java.util.Map;
 
 /**
  * @author Christoph Deppisch
- * @since 2.2
+ * @since 1.0
  */
-@Component(role = ModelWriter.class, hint = "annotate")
-public class JellyModelWriter implements ModelWriter {
+@Component(role = ModelWriter.class)
+public class JellyModelWriter extends DefaultModelWriter {
 
     @Override
     public void write(Writer writer, Map<String, Object> options, Model model) throws IOException {

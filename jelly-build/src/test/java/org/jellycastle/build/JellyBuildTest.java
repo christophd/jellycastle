@@ -17,14 +17,19 @@
 package org.jellycastle.build;
 
 import org.jellycastle.build.dependency.SampleBuild;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 public class JellyBuildTest {
 
+    /** Logger */
+    private static Logger log = LoggerFactory.getLogger(JellyBuildTest.class);
+
     @Test
     public void testBuild() {
         JellyBuild build = new JellyBuild(SampleBuild.class);
-        build.mvn().print();
+        log.info(build.mvn().print(build.load()));
     }
 
 }

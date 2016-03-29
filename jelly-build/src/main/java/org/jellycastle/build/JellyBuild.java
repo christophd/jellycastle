@@ -16,6 +16,7 @@
 
 package org.jellycastle.build;
 
+import org.jellycastle.annotation.Property;
 import org.jellycastle.annotation.jar.JavaBuild;
 import org.jellycastle.annotation.war.WebBuild;
 import org.jellycastle.maven.*;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -40,6 +42,9 @@ public class JellyBuild {
     /** Working directory for this build, usually the Maven POM file location */
     private String workingDirectory = "";
 
+    /** Maven instance for this build */
+    private Maven mvn;
+
     /**
      * Default constructor using configuration class with build annotations.
      * @param configuration
@@ -48,9 +53,7 @@ public class JellyBuild {
         this.configuration = configuration;
     }
 
-    private void loadBuildInformation(Maven mvn) {
-        Project project = mvn.getProject();
-
+    private void loadBuildInformation(Project project) {
         org.jellycastle.annotation.Build build = configuration.getAnnotation(org.jellycastle.annotation.Build.class);
 
         project.setModelVersion(build.modelVersion());
@@ -72,8 +75,36 @@ public class JellyBuild {
         }
     }
 
-    private void loadDependencies(Maven mvn) {
-        Project project = mvn.getProject();
+    private void loadProperties(Project project) {
+        Project.Properties properties = new ObjectFactory().createProjectProperties();
+
+        for (Annotation annotation : configuration.getAnnotations()) {
+            if (annotation instanceof Property) {
+                Property propertyAnnotation = (Property) annotation;
+                properties.getAnies().add(new PropertyElement(propertyAnnotation.name(), propertyAnnotation.value()));
+            }
+        }
+
+        if (properties.getAnies().size() > 0) {
+            project.setProperties(properties);
+        }
+    }
+
+    private void loadDependencies(Project project) {
+        DependencyManagement dependencyManagement = project.getDependencyManagement();
+        if (dependencyManagement == null) {
+            dependencyManagement = new ObjectFactory().createDependencyManagement();
+            dependencyManagement.setDependencies(new ObjectFactory().createDependencyManagementDependencies());
+            project.setDependencyManagement(dependencyManagement);
+        }
+
+        Project.Dependencies dependencies = project.getDependencies();
+        if (dependencies == null) {
+            dependencies = new ObjectFactory().createProjectDependencies();
+            project.setDependencies(dependencies);
+        }
+
+        addJellyBuild(dependencyManagement, dependencies);
 
         for (Method method : configuration.getDeclaredMethods()) {
             if (method.getAnnotation(org.jellycastle.annotation.dependency.Dependency.class) != null) {
@@ -86,13 +117,6 @@ public class JellyBuild {
                     dependency.setArtifactId(annotation.artifactId());
                     dependency.setVersion(annotation.version());
 
-                    DependencyManagement dependencyManagement = project.getDependencyManagement();
-                    if (dependencyManagement == null) {
-                        dependencyManagement = new ObjectFactory().createDependencyManagement();
-                        dependencyManagement.setDependencies(new ObjectFactory().createDependencyManagementDependencies());
-                        project.setDependencyManagement(dependencyManagement);
-                    }
-
                     dependencyManagement.getDependencies().getDependencies().add(dependency);
                 }
 
@@ -100,28 +124,49 @@ public class JellyBuild {
                 dependency.setGroupId(annotation.groupId());
                 dependency.setArtifactId(annotation.artifactId());
 
-                Project.Dependencies dependencies = project.getDependencies();
-                if (dependencies == null) {
-                    dependencies = new ObjectFactory().createProjectDependencies();
-                    project.setDependencies(dependencies);
-                }
-
                 dependencies.getDependencies().add(dependency);
             }
         }
     }
 
-    private void loadPlugins(Maven mvn) {
-        Project project = mvn.getProject();
+    private void addJellyBuild(DependencyManagement dependencyManagement, Project.Dependencies dependencies) {
+        Dependency managedDependency = new ObjectFactory().createDependency();
+        managedDependency.setGroupId("org.jellycastle");
+        managedDependency.setArtifactId("jelly-build");
+        managedDependency.setVersion("0.1.0");
+        dependencyManagement.getDependencies().getDependencies().add(managedDependency);
+
+        Dependency dependency = new ObjectFactory().createDependency();
+        dependency.setGroupId("org.jellycastle");
+        dependency.setArtifactId("jelly-build");
+        dependency.setScope("provided");
+        dependencies.getDependencies().add(dependency);
+    }
+
+    private void loadPlugins(Project project) {
+        Build build = project.getBuild();
+        if (build == null) {
+            build = new ObjectFactory().createBuild();
+            project.setBuild(build);
+        }
+
+        PluginManagement pluginManagement = build.getPluginManagement();
+        if (pluginManagement == null) {
+            pluginManagement = new ObjectFactory().createPluginManagement();
+            pluginManagement.setPlugins(new ObjectFactory().createPluginManagementPlugins());
+            build.setPluginManagement(pluginManagement);
+        }
+
+        Build.Plugins plugins = build.getPlugins();
+        if (plugins == null) {
+            plugins = new ObjectFactory().createBuildPlugins();
+            build.setPlugins(plugins);
+        }
+
+        addJellyBuildPlugin(pluginManagement, plugins);
 
         for (Method method : configuration.getDeclaredMethods()) {
             if (method.getAnnotation(org.jellycastle.annotation.plugin.Plugin.class) != null) {
-                Build build = project.getBuild();
-                if (build == null) {
-                    build = new ObjectFactory().createBuild();
-                    project.setBuild(build);
-                }
-
                 org.jellycastle.annotation.plugin.Plugin annotation =
                         method.getAnnotation(org.jellycastle.annotation.plugin.Plugin.class);
 
@@ -131,13 +176,6 @@ public class JellyBuild {
                     plugin.setArtifactId(annotation.artifactId());
                     plugin.setVersion(annotation.version());
 
-                    PluginManagement pluginManagement = build.getPluginManagement();
-                    if (pluginManagement == null) {
-                        pluginManagement = new ObjectFactory().createPluginManagement();
-                        pluginManagement.setPlugins(new ObjectFactory().createPluginManagementPlugins());
-                        build.setPluginManagement(pluginManagement);
-                    }
-
                     pluginManagement.getPlugins().getPlugins().add(plugin);
                 }
 
@@ -145,15 +183,24 @@ public class JellyBuild {
                 plugin.setGroupId(annotation.groupId());
                 plugin.setArtifactId(annotation.artifactId());
 
-                Build.Plugins plugins = build.getPlugins();
-                if (plugins == null) {
-                    plugins = new ObjectFactory().createBuildPlugins();
-                    build.setPlugins(plugins);
-                }
-
                 plugins.getPlugins().add(plugin);
             }
         }
+    }
+
+    private void addJellyBuildPlugin(PluginManagement pluginManagement, Build.Plugins plugins) {
+        Plugin managedPlugin = new ObjectFactory().createPlugin();
+        managedPlugin.setGroupId("org.jellycastle");
+        managedPlugin.setArtifactId("jelly-maven-plugin");
+        managedPlugin.setVersion("0.1.0");
+
+        pluginManagement.getPlugins().getPlugins().add(managedPlugin);
+
+        Plugin plugin = new ObjectFactory().createPlugin();
+        plugin.setGroupId("org.jellycastle");
+        plugin.setArtifactId("jelly-maven-plugin");
+
+        plugins.getPlugins().add(plugin);
     }
 
     /**
@@ -167,16 +214,29 @@ public class JellyBuild {
     }
 
     /**
-     * Gets the Maven model.
+     * Gets new Maven instance for project.
      * @return
      */
     public Maven mvn() {
-        Maven mvn = new Maven(workingDirectory);
-
-        loadBuildInformation(mvn);
-        loadDependencies(mvn);
-        loadPlugins(mvn);
+        if (mvn == null) {
+            mvn = new Maven(workingDirectory);
+        }
 
         return mvn;
+    }
+
+    /**
+     * Load project from configuration.
+     * @return
+     */
+    public Project load() {
+        Project project = new ObjectFactory().createProject();
+
+        loadBuildInformation(project);
+        loadProperties(project);
+        loadDependencies(project);
+        loadPlugins(project);
+
+        return project;
     }
 }

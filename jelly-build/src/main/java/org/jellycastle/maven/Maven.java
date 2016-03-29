@@ -50,9 +50,7 @@ public class Maven {
     protected static final String MVN = "mvn";
     private List<MavenCommand> commands = new ArrayList<MavenCommand>();
 
-    private Project project = new ObjectFactory().createProject();
-
-    private String workingDirectory = "";
+    private String workingDirectory;
 
     /**
      * Default constructor initializing jaxb marshaller.
@@ -65,9 +63,15 @@ public class Maven {
         } catch (Exception e) {
             throw new RuntimeException("Failed to setup marshaller", e);
         }
+    }
 
+    /**
+     * Loads project from normal POM location in working directory.
+     * @return
+     */
+    public Project fromPom() {
         try {
-            this.project = (Project) marshaller.unmarshal(new StreamSource(getPomFile().getInputStream()));
+            return (Project) marshaller.unmarshal(new StreamSource(getPomFile().getInputStream()));
         } catch (IOException e) {
             throw new RuntimeException("Failed to read Maven pom.xml", e);
         }
@@ -157,14 +161,6 @@ public class Maven {
     }
 
     /**
-     * Gets the current project.
-     * @return
-     */
-    public Project getProject() {
-        return this.project;
-    }
-
-    /**
      * Close stream or resource.
      * @param closeable
      */
@@ -235,11 +231,11 @@ public class Maven {
     /**
      * Gets Maven POM content as printable String.
      */
-    public void save() {
+    public void save(Project project) {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(getPomFile().getFile());
-            serialize(fos);
+            serialize(project, fos);
         } catch (IOException e) {
             throw new RuntimeException("Failed to save Maven POM file", e);
         } finally {
@@ -257,9 +253,9 @@ public class Maven {
     /**
      * Gets Maven POM content as printable String.
      */
-    public String print() {
+    public String print(Project project) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        serialize(bos);
+        serialize(project, bos);
 
         return bos.toString();
     }
@@ -268,7 +264,7 @@ public class Maven {
      * Serialize Maven POM object tree.
      * @param outputStream
      */
-    public void serialize(OutputStream outputStream) {
+    public void serialize(Project project, OutputStream outputStream) {
         StreamResult stream = new StreamResult(outputStream);
 
         Map<String, Object> marshallerProperties = new HashMap<String, Object>();
